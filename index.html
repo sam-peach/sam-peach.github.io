@@ -1,22 +1,33 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+    />
 
-<head>
-  <script src="https://cdn.onesignal.com/sdks/OneSignalSDK.js" defer></script>
-  <script>
-    window.OneSignal = window.OneSignal || [];
-    OneSignal.push(function() {
-      OneSignal.init({
-        appId: "2fca768f-ac27-40b2-ae96-e51f08c3a2c4",
-      });
-    });
-  </script>
-</head>
+    
+    <link rel="stylesheet" href="prism.css" />
+    <script defer src="prism.js"></script>
+    
 
-<body>
-  Hello, world!
+    <link rel="stylesheet" href="styles.css?v={TIMESTAMP}" />
+    <script src="router.js"></script>
 
-  I'm a website.
-</body>
-
+    <title>Hi, I&#39;m Sam</title>
+  </head>
+  <body>
+    <header>
+      <hgroup>
+         <h1 id="header__title">Hi, I&#39;m Sam</h1>
+         <h3 id="header__subtitle">Where I share some thoughts</h3>
+        <a href="/" data-nav="true">Home</a>
+      </hgroup>
+    </header>
+    <hr />
+    <main id="spa-content"></main>
+  </body>
+  
 </html>

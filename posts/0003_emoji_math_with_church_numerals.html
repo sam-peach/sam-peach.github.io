@@ -1,0 +1,166 @@
+<h1>Emoji Math with Church Numerals: 🍐 x 🍑 = 🍔</h1>
+
+<p><em>August 13th, 2023</em></p>
+
+<hr>
+
+<p>While toying with a hobby programming language I’ve had to become more familiar with the <a href="https://en.wikipedia.org/wiki/Lambda_calculus">lambda calculus</a>.</p>
+
+<p>One thing that’s piqued my interest is how numbers are represented in lambda calculus. Remembering that the number one rule of lambda calculus is that everything is a function.</p>
+
+<p>Exploring how numbers are represented with functions has allowed certain functional programming concepts click into place. This includes the separation of data from logic and the realization of how powerful, abstract, and elegant this approach can be.</p>
+
+<p>So, how does lambda calculus represent numbers?</p>
+
+<p>The answer lies in Church numerals. Named after Alonzo Church, Church numerals are a nifty little tool that abstracts numbers into a kind of pipeline.</p>
+
+<p>The number 3 looks like this expressed as a Church numeral:</p>
+
+<pre><code class="language-js">three = 𝝺f.𝝺x.f(f(f(x)));
+</code></pre>
+
+<p>Funky, right? Thankfully, it’s not as scary as it looks.</p>
+
+<p>The example above states that we’re defining the number three as a function that takes two arguments: a ‘successor’ function and a ‘base’. We then apply the successor function three times to the base to get our Church-encoded numeral.</p>
+
+<p>In JavaScript it looks like this:</p>
+
+<pre><code class="language-js">const three = (succ, base) =&gt; succ(succ(succ(base)));
+</code></pre>
+
+<p>What can we pass in as succ or base? Well, whatever we want, but let’s start simple: we’re going to let our successor function give us the next number in the number line.</p>
+
+<pre><code class="language-js">const base = 0;
+const succ = (n) =&gt; n + 1;
+
+const three = (s, b) =&gt; s(s(s(b)));
+
+console.log(three(succ, base)); // #=&gt; 3
+</code></pre>
+
+<p>We can follow the same pattern, applying the successor function n-number of times, to define any number we want:</p>
+
+<pre><code class="language-js">const zero = (s, b) =&gt; b;
+const one = (s, b) =&gt; s(b);
+const two = (s, b) =&gt; s(s(b));
+const three = (s, b) =&gt; s(s(s(b)));
+// etc.
+</code></pre>
+
+<p>Note, the variable names given here are for convenience. We can define a helper function to do the nesting for us:</p>
+
+<pre><code class="language-js">const base = 0;
+const succ = (n) =&gt; n + 1;
+
+const encodeNum = (f, num) =&gt; {
+  if (num === 0) return f;
+
+  // Recursively apply the 's' function n times.
+  return buildNum((s, b) =&gt; s(f(s, b)), num - 1);
+};
+
+const five = encodeNum((s, b) =&gt; b, 5);
+const literalFive = five(succ, base);
+console.log(literalFive); // #=&gt; 5
+</code></pre>
+
+<p>Nothing too exciting yet, but let’s think about what we’ve done.</p>
+
+<p>We now have a system that encodes base 10 decimals (0, 1, 2, 3, etc.) into a mathematical world that we define. Our definition so far happens to be in line with our expectations, but we’re free to define it however we like.</p>
+
+<p>We’ve decoupled the idea of numbers and their relationships from being static. Instead, with a successor function and a base value, we have the tools to build abstract numbers as a pipeline. The beautiful part is that this pipeline doesn’t care about the data as long as it’s encoded. All math will still work with our homegrown system!</p>
+
+<p>Let’s see what we can play with.</p>
+
+<p>Want to get rid of all odd numbers? Define the succ function to add 2 instead of 1.</p>
+
+<pre><code class="language-js">const base = 0;
+const succ = (n) =&gt; n + 2;
+// ...
+
+const five = encodeNum((s, b) =&gt; b, 5);
+const literalFive = five(succ, base);
+console.log(literalFive); // #=&gt; 10
+</code></pre>
+
+<p>We’ve defined ‘zero’ as ‘🍎’ and the rules of succession are to add 1 to the underlying unicode value. This computes ‘five = 🍓’.</p>
+
+<p>Again, the logic doesn’t care. It will compute whatever we give it!</p>
+
+<p>Let’s perform some operations. Church numerals can be nested inside each other in particular ways to achieve addition and multiplication:</p>
+
+<pre><code class="language-js">const add = (num1, num2, s, b) =&gt; num1(s, num2(s, b));
+const multiply = (num1, num2, s, b) =&gt; num1((n) =&gt; num2(s, n), b);
+</code></pre>
+
+<p>Typical numbers work as expected (we’d be in trouble if they didn’t):</p>
+
+<pre><code class="language-js">const base = 0;
+const succ = (n) =&gt; n + 1;
+
+const encodeNum = (f, num) =&gt; {
+  if (num === 0) return f;
+
+  return encodeNum((s, b) =&gt; s(f(s, b)), num - 1);
+};
+
+const add = (num1, num2, s, b) =&gt; num1(s, num2(s, b));
+
+const two = encodeNum((s, b) =&gt; b, 2);
+const three = encodeNum((s, b) =&gt; b, 3);
+
+const sum = add(two, three, succ, base);
+const product = multiply(two, three, succ, base);
+
+const literalTwo = two(succ, base);
+const literalThree = three(succ, base);
+
+console.log(`${literalTwo} + ${literalThree} = ${sum}`); // 2 + 3 = 5
+console.log(`${literalTwo} * ${literalThree} = ${product}`); // 2 * 3 = 6
+</code></pre>
+
+<p>But what about in emoji math land?</p>
+
+<pre><code class="language-js">// Swap this back in
+const base = &quot;🍎&quot;;
+const succ = (sym) =&gt; {
+  const val = sym.codePointAt(0) + 1; // add 1 to the unicode code
+  const hexVal = parseInt(val.toString(16), 16);
+  return String.fromCodePoint(hexVal); // cast back to an emoji
+};
+//...
+</code></pre>
+
+<p>This is where we can start doing some whacky stuff. Ever wondered what 🍐 + 🍑 is?</p>
+
+<pre><code class="language-js">const sum = add(two, three, succ, base);
+...
+const literalTwo = two(succ, base); // 🍐
+const literalThree = three(succ, base); // 🍑
+...
+console.log(`${literalTwo} + ${literalThree} = ${sum}`); // 🍐 + 🍑 = 🍓
+</code></pre>
+
+<p>What about how much fruit you need to add before it produces a hamburger?</p>
+
+<pre><code class="language-js">const product = multiply(two, three, succ, base);
+...
+const literalTwo = two(succ, base); // 🍐
+const literalThree = three(succ, base); // 🍑
+...
+console.log(`${literalTwo} * ${literalThree} = ${product}`); // 🍐 * 🍑 = 🍔
+</code></pre>
+
+<p>To hammer this point home, this is still valid math!</p>
+
+<p>Just as in China ‘5 + 2 = 7’ looks like ‘五 + 二 = 七’, or how in hexadecimal ‘9 + 2 = B’, we’ve got complete control over the symbols we define and how they interact with each other. So 🍐 * 🍑 does indeed equal 🍔 in emoji math!</p>
+
+<hr>
+
+<p>Exploring Church numeral and some of the intertwined math has been very eye-opening. Showing just how elastic math can be, as well as how functional programming has very interesting tricks up its sleeves.</p>
+
+<p>Play around with your own mathematical definitions, if for no other reason to prove that math is something to be played with!</p>
+
+<p>Digging into Church numerals and unraveling their math connections has been a real eye-opener. Showing how flexible and clever it can be, especially in the world of functional programming.</p>
+
+<p>As we wrap up, I’d urge you to dive into your own math doodles. If for no other reason than to prove math is something to be played with!</p>
