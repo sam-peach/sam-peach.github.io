@@ -1,0 +1,113 @@
+<h1>WordPress Wanted $50 A Month So I Built My Own Blog Generator</h1>
+
+<p><em>September 13th, 2025</em></p>
+
+<hr>
+
+<h2>TL;DR</h2>
+
+<p>I built a minimal, static, SPA blog generator and CLI tool named <strong>Quill</strong>. You can find it on GitHub <a href="https://github.com/bim-dev-tools/quill">here</a> and it&rsquo;s actively being worked on.</p>
+
+<hr>
+
+<p><strong>$50 a month for a syntax highlighting plugin!?</strong> I took that as both an insult and a challenge.</p>
+
+<p>So I left WordPress behind and built my own static blog generator. If you’re reading this, it means it worked.</p>
+
+<p>Before I started, I explored other site generators. I wanted something:</p>
+
+<p>Minimal - I don’t need a fancy UI. I prefer Markdown and a terminal.</p>
+
+<p>SPA-based - client-side routing just feels smoother these days.</p>
+
+<p>Low-level - I still want to drop in a few lines of CSS when I need to.</p>
+
+<p>Nothing quite fit. Most were bloated, poorly documented, or annoying to install. So I did what any mildly insulted developer would do - I wrote my own and called it <strong>Quill</strong>.</p>
+
+<h2>Design Philosophy</h2>
+
+<p>I&rsquo;m making a habit of setting the &lsquo;commandments&rsquo; of what I&rsquo;m building upfront. It&rsquo;s surprising how many decisions that can make for you in the designing and building process.</p>
+
+<p>For Quill I declared:</p>
+
+<blockquote>
+<h3>Don&rsquo;t Scale</h3>
+
+<p>No bells, no whistles. Minimal dependencies. Generate small, focused blogs that do one thing well.</p>
+</blockquote>
+
+<p>Quill doesn&rsquo;t even support pagination, and I&rsquo;m not sure I&rsquo;ll add it.</p>
+
+<blockquote>
+<h3>Sensible defaults, flexible when needed</h3>
+
+<p>Everything is configurable, but nothing has to be. Start simple, customize only if you want.</p>
+</blockquote>
+
+<p>I believe I&rsquo;ve borrowed this from the Ruby-on-Rails doctrine. It&rsquo;s fun to twiddle the knobs, but the focus should be on writing and publishing.</p>
+
+<blockquote>
+<h3>Posts aren’t programs</h3>
+
+<p>Content should stay close to raw text. The tooling gets out of the way so you can focus on words, not code.</p>
+</blockquote>
+
+<p>I started with having each blog post written as HTML but quickly found it got in the way of just <em>writing</em>. I was able to have Quill support embedded HTML in the Markdown files that create the blog posts but found the simpler format to be superior.</p>
+
+<blockquote>
+<h3>Just write</h3>
+
+<p>The workflow should encourage writing, not configuring. Remove friction, remove distractions.</p>
+</blockquote>
+
+<p>Following on from the previous point - I want to write and publish, not fiddle with code styling plugins.</p>
+
+<h2>How it works</h2>
+
+<p>Thankfully the core of static site generation is straight forward: take some input, produce some HTML, CSS, and JavaScript. Once you&rsquo;re happy, host it somewhere.</p>
+
+<p>The input for Quill is Markdown files. When writing a blog post I rarely feel the need for fancy formatting and Markdown covers all the bases. Turning Markdown into HTML is already a solved problem so I decided to sink some time into writing a bespoken SPA router (surprisingly, it only took <a href="https://github.com/bim-dev-tools/quill/blob/main/transpiler/static/router.js">50 lines of code!</a>) and setting some sensible CSS defaults.</p>
+
+<p>If you download Quill and run</p>
+
+<pre><code>quill init
+</code></pre>
+
+<p>You&rsquo;ll see a <code>posts/</code> directory with a <code>0001_hello_world.md</code> file inside (the <code>0001</code> is used for indexing - posts are rendered on the homepage by their index in descending order).</p>
+
+<p>If you then start up your Quill server:</p>
+
+<pre><code>quill server
+</code></pre>
+
+<p>You&rsquo;ll be able to see your rendered blog, make changes to your <code>0001_hello_world.md</code>, and see changes in real-time.</p>
+
+<p><img src="/images/quill_demo_site.png" alt="Quill&rsquo;s Demo Site" /></p>
+
+<p>Give that &lsquo;Hello, World!&rsquo; link a click and see the SPA navigation in action.</p>
+
+<p><img src="/images/quill_demo_post.png" alt="Quill&rsquo;s Demo Post" /></p>
+
+<p>The CSS is intentionally minimal but fully customizable - you, the author, have full ownership and access to the <code>styles.css</code> so can tweak until you&rsquo;re satisfied.</p>
+
+<p>Hopefully this demonstrates the the eagerness for Quill to get the blog, and writing content, up and running as quickly as possible.</p>
+
+<hr>
+
+<p>Once you&rsquo;re done adding blog posts, you&rsquo;ll need to host your blog somewhere.</p>
+
+<p>I spent an afternoon writing some intricate scripts to push blogs to AWS&rsquo;s S3 and enable static sites, but couldn&rsquo;t shake the feeling of &lsquo;this feels like it should be easier&rsquo;&hellip; and the little voice was right. Github Pages are the answer.</p>
+
+<p>As simple as running <code>quill build</code>, pushing the build to your GitHub IO page and you&rsquo;re done.</p>
+
+<hr>
+
+<h2>What&rsquo;s next?</h2>
+
+<p>I’ll keep expanding Quill with more CLI options and templates - but always with the same goal: make writing the focus</p>
+
+<p>If you&rsquo;re tired of fighting with WordPress, looking for something small with full control, or just want to write Markdown, give Quill a try.</p>
+
+<p>This project began out of frustration but it turned into something satisfying. Building Quill reminded me that we still <em>can</em> build our own tools - simple, fast, and ours.</p>
+
+<p>Give Quill a try <a href="https://github.com/bim-dev-tools/quill">here</a> and let me know what you think.</p>
