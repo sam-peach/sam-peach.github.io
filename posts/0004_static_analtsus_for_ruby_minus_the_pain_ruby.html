@@ -1,0 +1,104 @@
+<h1>Static Analysis for Ruby, Minus the Pain</h1>
+
+<p><em>February 1st, 2026</em></p>
+
+<hr>
+
+<p>Ruby is easy to break. Its dynamism makes it easy to shoot yourself in the foot unless you’re disciplined about enforcing rules and standards.</p>
+
+<p>After spending a the past few years working in statically typed languages, the shift back was a little jarring. In applications built with Ruby, much of the structure lives in people&rsquo;s heads. Docs and reviews become the primary tool for enforcing hard rules, which breaks as teams and products grow. Some of you might be thinking, “What about RuboCop?” In my experience, RuboCop only stretches so far before running into the same scaling problems.</p>
+
+<p>This post argues that Ruby static analysis doesn’t need to be comprehensive to be valuable. In practice, catching contradictions, dead branches, and impossible states early provides most of the safety benefits without the maintenance burden of RBI files</p>
+
+<p>This gap pushed me to explore the the current tools meant to make Ruby a little less volatile.</p>
+
+<p>By volatile I mean code that fails at runtime without warning.</p>
+
+<p>Consider this snippet. Take a moment to consider how it breaks before continuing.</p>
+
+<pre><code class="language-ruby">user = User.find_by(name: user_name)
+puts user.age
+</code></pre>
+
+<p>If <code>user_name</code> doesn’t exist, <code>find_by</code> returns nil. The next line calls <code>nil.age</code> and raises an exception.</p>
+
+<p>This issue has many code solutions however I want to know about the error before it breaks locally, hits review, or worse, production.</p>
+
+<hr>
+
+<p>Tools like <a href="https://sorbet.org/">Sorbet</a> and <a href="https://github.com/soutaro/steep">Steep</a> bring static analysis to Ruby by describing code interfaces/shape in RBI files. These files tell the analyzer what methods exist, what they return, and where types should line up.</p>
+
+<p>In practice, this information doesn&rsquo;t appear on its own. Teams have to write, generate, and keep it in sync with code that&rsquo;s constantly changing.</p>
+
+<p>When I tried to add Sorbet at work, it produced a 1.4 million line pull request - mostly RBI files for internal libraries and external gems. The static analysis worked but it came with a shadow codebase almost larger than the one I actually cared about.</p>
+
+<p>This didn&rsquo;t sit well with me so I started digging into why.</p>
+
+<hr>
+
+<p>I assumed static analysis was magic - something like compilers performing mind-bending branch prediction or symbolic execution.</p>
+
+<p>The reality turned out to be simpler, and just as powerful.</p>
+
+<p>Static analysis mostly works by tracking sets of possible types and checking whether operations make sense for all of them. That clicked when I tried to answer a simple question: what can this variable be right now?</p>
+
+<pre><code class="language-ruby">x = 10
+
+if x == &quot;a&quot;
+  puts &quot;x is 'a'&quot;
+elsif x == nil
+  puts &quot;x is nil&quot;
+end
+</code></pre>
+
+<p>Both branches are unreachable in this code. The interesting part is how an analyzer can determine that without running the program.</p>
+
+<pre><code class="language-ruby">x = 10
+</code></pre>
+
+<p>At this point, the analyzer doesn’t need the exact value. It only needs to know that <code>x</code> belongs to the set of integers.</p>
+
+<pre><code class="language-ruby"># pseudo code
+env = { x: Int }
+</code></pre>
+
+<p>When it reaches:</p>
+
+<pre><code class="language-ruby">if x == &quot;a&quot;
+</code></pre>
+
+<p>the predicate can only be true if <code>x</code> is a <code>String</code>. That contradicts the current environment, so the branch can’t exist. The same reasoning eliminates the <code>nil</code> check.</p>
+
+<p>Taking and expanding this basic model, I was able to build an analyzer that flags dead branches and enforces that both sides of a math operation share the same type. What surprised me was how little code this took.</p>
+
+<p>I did this without RBI files. All type information came from the AST or from YARD-style comments.</p>
+
+<p>That raised an important question: how far can this go? Can a useful analyzer exist without RBI files at all?</p>
+
+<hr>
+
+<p>With a proof-of-concept, clear objectives and constraints, I set Claude loose on this task. This time using Go and baking in quality of life improvements like:</p>
+
+<ul>
+<li>Dynamic file indexing: stopping the analyzer re-parsing entire projects on when changes occur</li>
+<li>Handling literals: catching contradictions like <code>if 1 == 2</code></li>
+<li>An LSP bridge: running the analyzer gets more useful when it plays nicely with IDEs/code editors.</li>
+</ul>
+
+<p>I have a lot of thoughts on the current state of AI and code generators. One places AI does has an edge is with focuses, green-filed projects and Claude didn&rsquo;t disappoint. With minimal tweaking the analyzers was stood up and integrated with my VS Code in no time.</p>
+
+<p>The million dollar question: <em>can Ruby support static analysis without RBI files?</em> In a word, <strong>yes</strong>.</p>
+
+<p>You can find the repo for the static analyzer here: <a href="https://github.com/sam-peach/static-ruby">Static Ruby</a>, and the VS Code extension here: <a href="https://github.com/sam-peach/static-ruby-ext">Static Ruby Ext</a>.</p>
+
+<hr>
+
+<p>Static Ruby is not about making Ruby act like Go or Rust. It’s an attempt to encode experienced Ruby devs already know into tooling that helps the rest of the team make better decisions by default. It’s about shrinking the set of possibilities and catching impossibilities early, locally, and cheaply.</p>
+
+<p>It’s not an attempt to shoehorn a provably correct type system into a dynamic language, nor to eliminate runtime errors entirely. Instead, it focuses on adding clarity and guardrails where Ruby is most fragile: nils, contradictory branches, and code paths that can never exist.</p>
+
+<p>I don’t yet know if this approach scales cleanly to millions of lines of Ruby. I do know that teams don’t need perfect static typing to get real value from static analysis.</p>
+
+<p>My bet is that the future of Ruby tooling isn’t heavier type systems or ever-growing parallel codebases. It’s fast, local analyzers that trade completeness for usability and surface problems while they’re still cheap to fix.</p>
+
+<p>If this resonates, I’d love feedback, contributions, or counterexamples. At the very least, I hope it encourages more experimentation in the space between “fully dynamic” and “fully typed” because that’s where most Ruby teams actually live.</p>
