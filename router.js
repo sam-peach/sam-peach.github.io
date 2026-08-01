@@ -3,10 +3,12 @@ const loadContent = async (page) => {
     const response = await fetch(`posts/${page}.html`);
     const text = await response.text();
 
-    // Extract only the main content
+    // Post pages are standalone documents so crawlers can read their metadata;
+    // pull just the article out of them. The home list is a bare fragment, so
+    // fall back to the body.
     const parser = new DOMParser();
     const doc = parser.parseFromString(text, "text/html");
-    const newContent = doc.body;
+    const newContent = doc.querySelector("#post-content") || doc.body;
 
     return newContent;
   } catch (error) {
