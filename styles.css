@@ -97,8 +97,59 @@ a:hover {
 
 @media screen and (max-width: 768px) {
   html {
-    font-size: 1.35rem;
-    padding: 2vh 6vw;
-    line-height: 1.85rem;
+    /* At true device width, 1.35rem left only ~32 characters per line.
+       Smaller type plus tighter gutters reads far better on a phone. */
+    font-size: 1.125rem;
+    padding: 2vh 4.5vw;
+    line-height: 1.6;
+  }
+
+  /* Headings should not inherit the body's airy ratio. */
+  main h1,
+  main h2,
+  main h3 {
+    line-height: 1.2;
+  }
+
+  main h1 {
+    font-size: 1.75rem;
+  }
+
+  main h2 {
+    font-size: 1.3rem;
+  }
+
+  /* The extra word spacing reads as gappy at phone measures. */
+  p {
+    word-spacing: normal;
+  }
+
+  main p {
+    margin-bottom: 1.1rem;
+  }
+
+  main hr {
+    margin: 1.5em 0;
+  }
+
+  hr {
+    height: 2px;
+  }
+
+  #header__title {
+    font-size: 1.5rem;
+  }
+
+  #header__subtitle {
+    font-size: 0.85rem;
+  }
+
+  #home__page-list li {
+    margin-bottom: 1.5rem;
+  }
+
+  #home__page-list a {
+    font-size: 1.5rem;
+    line-height: 1.25;
   }
 }
